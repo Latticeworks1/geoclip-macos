@@ -16,64 +16,27 @@ Native macOS app for worldwide image geolocalization using GeoCLIP. Powered by C
 - Xcode 15.0+
 - ~200MB disk space for pre-computed gallery features
 
-## Important Note
-
-The pre-computed gallery features file (`gps_gallery_features.bin`, 196MB) is **not included** in this repo due to size. You must generate it yourself (see step 2 below).
-
 ## Quick Start
 
-### 1. Export Core ML Models
+All required files (Core ML models and pre-computed features) are included via Git LFS. Just clone and build!
 
-First, you need the original GeoCLIP weights and export them to Core ML:
+### 1. Clone Repository
 
 ```bash
-# Install dependencies
-pip install torch coremltools geoclip
-
-# Export models (creates ImageEncoder.mlpackage and LocationEncoder.mlpackage)
-python export_coreml.py
+git clone https://github.com/Latticeworks1/geoclip-macos.git
+cd geoclip-macos
 ```
 
-This will create:
-- `ImageEncoder.mlpackage` - CLIP vision encoder + MLP projection (frozen CLIP weights)
-- `LocationEncoder.mlpackage` - Multi-scale RFF location encoder
-
-### 2. Generate Gallery Features
-
-The app uses pre-computed features for 100K worldwide locations for fast inference:
-
-```python
-import torch
-import numpy as np
-from geoclip import GeoCLIP
-import struct
-
-# Load model
-model = GeoCLIP(from_pretrained=True, backend='torch')
-model.eval()
-
-# Load GPS gallery
-import pandas as pd
-gps_gallery = pd.read_csv(
-    'path/to/geoclip/model/gps_gallery/coordinates_100K.csv'
-)
-
-# Encode all locations
-with torch.no_grad():
-    gps_tensor = torch.tensor(gps_gallery[['LAT', 'LON']].values, dtype=torch.float32)
-    location_features = model.location_encoder(gps_tensor).numpy()
-
-# Save as binary file
-with open('GeoCLIP.app/gps_gallery_features.bin', 'wb') as f:
-    f.write(struct.pack('i', len(gps_gallery)))  # Gallery size
-    for _, row in gps_gallery.iterrows():
-        f.write(struct.pack('ff', row['LAT'], row['LON']))  # GPS coords
-    location_features.astype(np.float32).tofile(f)  # Features
-
-print(f"Saved {len(gps_gallery)} pre-computed features")
+Make sure you have Git LFS installed to download the large model files:
+```bash
+# Install Git LFS if needed
+brew install git-lfs
+git lfs install
+git lfs pull  # Download large files
 ```
 
-### 3. Build and Run
+### 2. Build and Run
+
 
 ```bash
 cd GeoCLIP.app
