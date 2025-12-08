@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local configuration
+.claude/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MLX specific
+*.mlx
+GeoCLIP.app/gps_gallery_features.bin
+
+# Large Core ML model weights
+GeoCLIP.app/ImageEncoder.mlpackage/Data/com.apple.CoreML/weights/
+GeoCLIP.app/LocationEncoder.mlpackage/Data/com.apple.CoreML/weights/
