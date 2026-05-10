@@ -214,7 +214,7 @@ class GeoCLIPCoreML: ObservableObject {
                     rank: index + 1,
                     latitude: Double(gps.lat),
                     longitude: Double(gps.lon),
-                    confidence: Double(similarities[galleryIdx])
+                    confidence: Double(max(0, similarities[galleryIdx]))
                 )
             }
 
@@ -254,7 +254,10 @@ class GeoCLIPCoreML: ObservableObject {
         let imageNorm = sqrt(imageFeatures.map { $0 * $0 }.reduce(0, +))
         let normalizedImage = imageFeatures.map { $0 / imageNorm }
 
-        // Compute cosine similarity with pre-normalized gallery features
+        // Compute cosine similarity with pre-normalized gallery features.
+        // Raw dot product of two unit vectors is the cosine similarity in [-1, 1].
+        // Softmax is omitted: it is monotone so ranking is identical, but it
+        // collapses all 100k probabilities to ~1e-5, making the % display useless.
         var similarities = [Float](repeating: 0, count: gallerySize)
         for i in 0..<gallerySize {
             var dot: Float = 0
@@ -263,12 +266,7 @@ class GeoCLIPCoreML: ObservableObject {
             }
             similarities[i] = dot
         }
-
-        // Softmax
-        let maxSim = similarities.max() ?? 0
-        let expSims = similarities.map { exp($0 - maxSim) }
-        let sumExp = expSims.reduce(0, +)
-        return expSims.map { $0 / sumExp }
+        return similarities
     }
 
     private func getTopK(from array: [Float], k: Int) -> [Int] {
